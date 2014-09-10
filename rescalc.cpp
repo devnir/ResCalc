@@ -39,6 +39,7 @@ ResCalc::ResCalc(QWidget *parent) :
   replayTimer->setSingleShot(false);
   connect(replayTimer, SIGNAL(timeout()), this, SLOT(timeOut()));
   firstRun = false;
+  replayTimer->setInterval(1000);
   loadSettings();
 }
 
@@ -176,7 +177,7 @@ void ResCalc::firstPrepare()
   QJsonObject town = bodyObj["town"].toObject();
 
   int lastUpdate = (int)town["lastConsumption"].toDouble();
-  int timeOut = 900 + lastUpdate + 1;
+  int timeOut = 900 + lastUpdate;
   secCounter = timeOut;
   //ui->logData->append("-----TimerInit-----");
   QString str;
@@ -185,7 +186,7 @@ void ResCalc::firstPrepare()
   qDebug() << str;
   //replayTimer->setInterval();
   firstRun = false;
-  replayTimer->start(1000);
+  replayTimer->start(999);
 }
 
 void ResCalc::prepareData()
@@ -207,7 +208,7 @@ void ResCalc::prepareData()
   secCounter = timeOut;
   int ind = town["level"].toDouble();
   QString s;
-  s.sprintf("--АП %d-%d ур.\n Погрешность: %d", ind, ind + 1, timeOut);
+  s.sprintf("--АП %d-%d ур.\n Погрешность: %d c.", ind, ind + 1, lastUpdate);
   ui->logData->append(s);
   for(int i = 0; i < res.count(); i++)
   {
@@ -216,7 +217,7 @@ void ResCalc::prepareData()
     if( val["priority"].toDouble() == 1.)
     {
       int type = val["type"].toDouble();
-      int poloj = (int)val["amount"].toDouble() - (int)potreb_low[ind] - (int)val["consume_amount"].toDouble();
+      int poloj = (int)val["amount"].toDouble() - (int)potreb_low[ind]/* - (int)val["consume_amount"].toDouble()*/;
       QString str;
       str.sprintf("%d", poloj);
       QString strOut;
@@ -231,14 +232,15 @@ void ResCalc::timeOut()
   int sec, min;
   min = secCounter / 60;
   sec = secCounter - (min * 60);
+  if(secCounter<0)
+  {
+    putRequest();
+  }
   QString str;
   str.sprintf("Time left: %02d:%02d", min, sec);
   ui->label->setText(str);
   secCounter--;
-  if(secCounter==0)
-  {
-    putRequest();
-  }
+
 }
 
 void ResCalc::putRequest()
