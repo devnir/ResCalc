@@ -21,6 +21,17 @@ typedef struct
   QByteArray cookie;
   QByteArray post;
 }TServerList;
+typedef struct
+{
+    int id;
+    int count;
+}TRes;
+
+typedef struct
+{
+  int  lvl;
+  TRes res[4];
+}TForumMsg;
 
 
 namespace Ui {
@@ -37,6 +48,7 @@ class ResCalc : public QMainWindow
     void prepareData();
     void firstPrepare();
     void putRequest();
+    void prepareCorrection();
     explicit ResCalc(QWidget *parent = 0);
     QTimer *replayTimer;
     QNetworkAccessManager *mgr;
@@ -53,9 +65,16 @@ class ResCalc : public QMainWindow
   private slots:
     void getReplyFinished();
     void readyReadReply();
+    void ReplyFinishedDBG();
+    void readyReadReplyDBG();
+    void correctionReply();
     void timeOut();
 
     void on_StartBtn_clicked();
+
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
 
   private:
     Ui::ResCalc *ui;

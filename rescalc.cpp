@@ -3,6 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QCryptographicHash>
 
 QByteArray name_res[] =
   {
@@ -18,7 +19,7 @@ QByteArray name_res[] =
    "Электроника","Игрушки","Спортивные товары",
    "Сантехника","Лекарства"
   };
-
+TForumMsg forumMsg;
 int potreb_low[] =
 {
   0, 2345, 2680, 3, 3551, 4087, 4690, 5360, 6063, 6800, 7571, 8375, 9212, 10083,
@@ -75,6 +76,26 @@ void ResCalc::readyReadReply()
   {
     prepareData();
   }
+}
+
+void ResCalc::correctionReply()
+{
+  QString answer = QString::fromUtf8(reply->readAll());
+  QString strReply = answer;
+
+  QJsonDocument jsonResponse = QJsonDocument::fromJson(strReply.toUtf8());
+  QJsonObject jsonObject = jsonResponse.object();
+  QJsonObject bodyObj = jsonObject["Body"].toObject();
+  QJsonArray res = bodyObj["resources"].toArray();
+  QJsonObject town = bodyObj["town"].toObject();
+
+
+  int lastUpdate = (int)town["lastConsumption"].toDouble();
+  int timeOut = 900 + lastUpdate + 1;
+  firstRun = false;
+  secCounter = timeOut;
+  QString s;
+  s.sprintf("-- Корректировка, осталось: %d с.", secCounter);
 }
 
 /*
@@ -209,6 +230,7 @@ void ResCalc::prepareData()
   int ind = town["level"].toDouble();
   QString s;
   s.sprintf("--АП %d-%d ур.\n Погрешность: %d c.", ind, ind + 1, lastUpdate);
+  forumMsg.lvl = ind;
   ui->logData->append(s);
   for(int i = 0; i < res.count(); i++)
   {
@@ -223,8 +245,11 @@ void ResCalc::prepareData()
       QString strOut;
       strOut = name_res[type] + ": " + str;
       ui->logData->append(strOut);
+      forumMsg.res[i].id = type;
+      forumMsg.res[i].count = poloj;
     }
   }
+  on_pushButton_clicked();
 }
 
 void ResCalc::timeOut()
@@ -232,10 +257,16 @@ void ResCalc::timeOut()
   int sec, min;
   min = secCounter / 60;
   sec = secCounter - (min * 60);
-  if(secCounter<0)
+  if(secCounter == 20)
+  {
+    prepareCorrection();
+  }
+
+  if(secCounter < 0)
   {
     putRequest();
   }
+
   QString str;
   str.sprintf("Time left: %02d:%02d", min, sec);
   ui->label->setText(str);
@@ -243,7 +274,7 @@ void ResCalc::timeOut()
 
 }
 
-void ResCalc::putRequest()
+void ResCalc::prepareCorrection()
 {
   TServerList slt;
   slt = serverList.at(ui->serverCombo->currentIndex());
@@ -259,5 +290,108 @@ void ResCalc::putRequest()
   req.setRawHeader("Cookie", slt.cookie);
   reply = manager.post(req, slt.post);
   connect(reply, SIGNAL(finished()),this, SLOT(getReplyFinished()));
+  connect(reply, SIGNAL(readyRead()), this, SLOT(correctionReply()));
+
+}
+
+void ResCalc::putRequest()
+{
+  TServerList slt;
+  slt = serverList.at(ui->serverCombo->currentIndex());
+  QString url(slt.serverUrl);
+  QNetworkRequest req(url);
+  req.setRawHeader("Content-Type","application/json");
+  req.setRawHeader("User-Agent",slt.userAgent);
+  req.setRawHeader("Cookie", slt.cookie);
+  reply = manager.post(req, slt.post);
+  connect(reply, SIGNAL(finished()),this, SLOT(getReplyFinished()));
   connect(reply, SIGNAL(readyRead()), this, SLOT(readyReadReply()));
+}
+
+void ResCalc::on_pushButton_clicked()
+{
+  /*if(forumMsg.lvl == 0)
+    return;
+*/
+  TServerList slt;
+  slt = serverList.at(ui->serverCombo->currentIndex());
+
+  //QByteArray reqUrl("http://s1.railnation.ru/web/rpc/flash.php?interface=CorporationForumInterface&method=send"); //форум отправить пост
+  //QByteArray reqUrl("http://s1.railnation.ru/web/rpc/flash.php?interface=CorporationInterface&method=get"); //инфа про ассу
+  QByteArray reqUrl("http://s1.railnation.ru/web/rpc/flash.php?interface=CorporationForumInterface&method=getThreads");
+  QString url(reqUrl);
+  QNetworkRequest req(url);
+  req.setRawHeader("Content-Type","application/json");
+  req.setRawHeader("User-Agent",slt.userAgent);
+  req.setRawHeader("Cookie", slt.cookie);
+/*
+  QString post;
+  post.sprintf("{\"parameters\":[\"UpStatistic\",\"АП %d->%d ур.\r", forumMsg.lvl, forumMsg.lvl + 1);
+  int resCount;
+  if(forumMsg.lvl == 1)
+  {
+    resCount = 3;
+  }
+  else
+  {
+    resCount = 4;
+  }
+
+  for(int i = 0; i < resCount; i++)
+  {
+    post.append(name_res[forumMsg.res[i].id]);
+    QString str;
+    str.sprintf(":\t%d\r", forumMsg.res[i].id);
+    post.append(str);
+  }
+  post.append("\",\"8f61fd0d-647c-9f6d-0941-4de25e0d928c\"],\"client\":1,\"checksum\":\"ea24d4af2c566004782f750f940615e5\",\"hash\":\"18266b5a590fca288b104cf87e8e3c76\"}");
+  QByteArray send;
+  send.append(post);
+  qDebug() << send;*/
+
+  //QByteArray send("{\"parameters\":[\"UpStatistic\",\"1235\",\"8f61fd0d-647c-9f6d-0941-4de25e0d928c\"],\"client\":1,\"hash\":\"46030d83f03a3295766414d3192a8c12\",\"checksum\":\"ea24d4af2c566004782f750f940615e5\"}"); // попытка поста
+  //QByteArray send("{\"parameters\":[\"edd8c452-b501-5d54-77c5-e0fcfb6f5c9c\"],\"client\":1,\"hash\":\"7d607d5432f856a1e54bfaaaca6123ae\",\"checksum\":\"ea24d4af2c566004782f750f940615e5\"}"); // инфа про ассу
+  //QByteArray send("{\"parameters\":[],\"client\":1,\"hash\":\"d751713988987e9331980363e24189ce\",\"checksum\":\"ea24d4af2c566004782f750f940615e5\"}");
+  QByteArray send("{\"parameters\":[\"Flood\",\"1\",\"fe681ac5-d2b5-92b4-e81a-edec6122f5f0\"],\"client\":1,\"hash\":\"e234ddb382e76d28176fe7f6e0e35861\",\"checksum\":\"ea24d4af2c566004782f750f940615e5\"}");
+  reply = manager.post(req, send);
+
+  connect(reply, SIGNAL(finished()),this, SLOT(ReplyFinishedDBG()));
+  connect(reply, SIGNAL(readyRead()), this, SLOT(readyReadReplyDBG()));
+  forumMsg.lvl = 0;
+}
+void ResCalc::ReplyFinishedDBG()
+{
+  reply->deleteLater();
+}
+
+void ResCalc::readyReadReplyDBG()
+{
+  QString answer = QString::fromUtf8(reply->readAll());
+  qDebug() << answer;
+}
+
+
+/*
+e4135b18-9b4b-9379-0fec-cebe808fec4b     - user_id
+
+*/
+
+void ResCalc::on_pushButton_2_clicked()
+{
+
+  QByteArray str;
+  str.append(ui->lineEdit->text());
+  QByteArray etalon("e234ddb382e76d28176fe7f6e0e35861");
+  QByteArray etalon1("28c8edde3d61a0411511d3b1866f0636");
+  for(int i = 0; i < 1; i++)
+  {
+    str = QCryptographicHash::hash ((str),QCryptographicHash::Md5).toHex();
+    qDebug() << str;
+    if(str == etalon)
+    {
+      qDebug() << i;
+      qDebug() << str;
+    }
+  }
+  qDebug("Done");
 }
