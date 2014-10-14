@@ -19,14 +19,16 @@ SOURCES += main.cpp\
     bonuses.cpp \
     corporation.cpp \
     settingsadd.cpp \
-    trainsrepair.cpp
+    trainsrepair.cpp \
+    statistic.cpp
 
 HEADERS  += rescalc.h \
     resourcedata.h \
     bonuses.h \
     corporation.h \
     settingsadd.h \
-    trainsrepair.h
+    trainsrepair.h \
+    statistic.h
 
 FORMS    += rescalc.ui \
     settingsadd.ui

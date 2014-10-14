@@ -20,6 +20,8 @@
 #include "corporation.h"
 #include "settingsadd.h"
 #include "trainsrepair.h"
+#include "statistic.h"
+
 /*
  * Структура для ремонта поездов
  */
@@ -32,20 +34,6 @@ typedef struct
 /*
  * Структура настроек
  */
-typedef struct
-{
-    int id;
-    int count;
-    float trend;
-}TRes;
-
-typedef struct
-{
-    int lvl;
-    QVector<TRes> res;
-}TUpStat;
-
-
 
 typedef struct
 {
@@ -80,20 +68,19 @@ class ResCalc : public QMainWindow
     void forumReplyFinished();
     void forumReadyReadReply();
     void ReplyFinished();
-    void ReadyReadFirstReply();
-    void ReadyReadReply();
+
+
     void timeOut();
     void showLocalTime();
-    void postTimeout();
+
     void postStr(QString msg);
     void reqPrepare(bool correction);
     void trainReadyReadReply();
-    void trainReplyFinished();
     void slotBonusRequest(QByteArray addUrl, QByteArray param, bool enReq);
     void bonusReadyReadReply();
     void bonusReplyFinished();
     void corpReadyReadReply();
-    void corpReplyFinished();
+
     void slotCorpRequest(QByteArray addUrl, QByteArray param, bool enReq);
     void slotBonColTimeOut();
     void slotBonColDone(int nextWait);
@@ -102,19 +89,12 @@ class ResCalc : public QMainWindow
     void slotTrainRequest(QByteArray addUrl, QByteArray param, bool enReq);
     void slotTrainLog(QString str);
 
+    void slotStatisticRequest(QByteArray addUrl, QByteArray param, bool enReq);
+    void slotStatisticLog(QString str);
+    void statisticReadyReadReply();
+
     void on_pushButton_2_clicked();
-
     void on_pushButton_3_clicked();
-
-
-
-    void on_repairBtn_clicked();
-
-
-
-
-
-
 
   private:
     Ui::ResCalc   *ui;
@@ -126,12 +106,14 @@ class ResCalc : public QMainWindow
     QNetworkReply *trainReply;
     QNetworkReply *bonusReply;
     QNetworkReply *corpReply;
+    QNetworkReply *statisticReply;
     QVector<TMyTrain> myTrain;
     resourceData   resData;
     bonuses        bonus;
     Corporation    corp;
     settingsAdd    setForm;
     trainsRepair   trainRep;
+    Statistic      statistic;
 
     void loadSettings();
     void saveSettings();

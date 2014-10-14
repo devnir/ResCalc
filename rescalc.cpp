@@ -1,29 +1,7 @@
 #include "rescalc.h"
 #include "ui_rescalc.h"
 #include <QDateTime>
-QByteArray name_res[] =
-  {
-   "Все товары","Уголь","Пшеница","Железо","Дерево",
-   "Доски","Железная руда","Хлопок","Тексиль","Скот",
-   "Колбаса","Нить","Инструменты","Бумага","Кожа","Хлеб",
-   "Мука","Медная руда","Кварц","Медь","Сталь","Обувь",
-   "Стекло","Проволка","Трубы","Упаковка","Окна",
-   "Листовой металл","Силикаты","Еда","Нефть","Лампы",
-   "Химикаты","Одежда","Нержавеющая сталь","Бокситы",
-   "Двигатели","Пластик","Алюминий","Керамика",
-   "Стальные балки","Бензин","Автомобили","Хоз. товары",
-   "Электроника","Игрушки","Спортивные товары",
-   "Сантехника","Лекарства"
-  };
 
-int potreb_low[] =
-{
-  0, 2345, 2680, 3, 3551, 4087, 4690, 5360, 6063, 6800, 7571, 8375, 9212, 10083,
-  10988, 11926, 12897, 13902, 14941, 16013, 17119, 18257, 19430, 20636, 21875,
-  25, 24455, 25795, 28, 28575, 30016, 31490, 32998, 33, 36113, 37721, 39362,
-  41037, 42746, 44488, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53,
-  54, 55, 56, 57, 58, 59, 60
-};
 
 ResCalc::ResCalc(QWidget *parent) :
   QMainWindow(parent),
@@ -51,11 +29,15 @@ ResCalc::ResCalc(QWidget *parent) :
   qsrand (QDateTime::currentMSecsSinceEpoch());
   connect(updTimer, SIGNAL(timeout()), this, SLOT(timeOut()));
   connect(localTimer, SIGNAL(timeout()), this, SLOT(showLocalTime()));
-  connect(postTimer, SIGNAL(timeout()), this, SLOT(postTimeout()));
+
   connect(&bonus, SIGNAL(signalRequest(QByteArray,QByteArray, bool)), this, SLOT(slotBonusRequest(QByteArray,QByteArray, bool)));
   connect(&corp, SIGNAL(signalRequest(QByteArray,QByteArray, bool)), this, SLOT(slotCorpRequest(QByteArray,QByteArray, bool)));
   connect(&trainRep, SIGNAL(signalRequest(QByteArray,QByteArray,bool)),this, SLOT(slotTrainRequest(QByteArray,QByteArray,bool)));
   connect(&trainRep, SIGNAL(signalPutToLog(QString)), this, SLOT(slotTrainLog(QString)));
+
+  connect(&statistic, SIGNAL(signalRequest(QByteArray,QByteArray,bool)),this, SLOT(slotStatisticRequest(QByteArray,QByteArray,bool)));
+  connect(&statistic, SIGNAL(signalPutToLog(QString)), this, SLOT(slotStatisticLog(QString)));
+
   localTimer->start();
 
 
@@ -135,7 +117,7 @@ void ResCalc::loadSettings()
     srv.town = set.value("Town", "").toString();
     srv.townId = set.value("TownId", "").toByteArray();
     srv.url = set.value("ServerUrl", "").toByteArray();
-    srv.userAgent = set.value("").toByteArray();
+    srv.userAgent = set.value("UAgent", "").toByteArray();
     srv.cookie = set.value("Cookie","").toByteArray();
     srv.checkSum = set.value("CheckSum", "").toByteArray();
     srv.userId = set.value("UserId", "").toByteArray();
@@ -151,6 +133,7 @@ void ResCalc::loadSettings()
 
   if(count == 0)
   {
+    setWindowTitle(windowTitle() + " Marivanna edition");
       set.beginGroup("Servers");
       TServer srv;
       srv.name = set.value("Name", "Блок Цилиндров").toString();
@@ -188,92 +171,6 @@ void ResCalc::forumReplyFinished()
   forumReply->deleteLater();
 }
 
-void ResCalc::ReadyReadReply()
-{
-  QString answer = QString::fromUtf8(reply->readAll());
-  QJsonDocument jsonResponse = QJsonDocument::fromJson(answer.toUtf8());
-  QJsonObject jsonObject = jsonResponse.object();
-  QJsonObject bodyObj = jsonObject["Body"].toObject();
-  QJsonArray res = bodyObj["resources"].toArray();
-  QJsonObject town = bodyObj["town"].toObject();
-
-  int lastUpdate = (int)town["lastConsumption"].toDouble();
-  //qDebug() << lastUpdate;
-  int timeOut = 902 + lastUpdate;
-  secCounter = timeOut;
-
-  int ind = town["level"].toDouble();
-  upStat.lvl = ind;
-  upStat.res.clear();
-  for(int i = 0; i < res.count(); i++)
-  {
-    QJsonObject val = res.at(i).toObject();
-    resData.putData(val);
-    if( val["priority"].toDouble() == 1.)
-    {
-      int type = val["type"].toDouble();
-      int poloj = (int)val["amount"].toDouble() - (int)potreb_low[ind]/* - (int)val["consume_amount"].toDouble()*/;      
-      TRes r;
-      r.id = type;
-      r.count = poloj;
-      r.trend = (float)val["trend"].toDouble();
-      upStat.res.append(r);
-      //qDebug() << "---------" + name_res[r.id] + "----------";
-      //qDebug() << val;
-    }
-  }
-  resData.calcTrend();
-  QString msg;
-  for(int i = 0; i < upStat.res.count(); i++)
-  {
-    TRes res = upStat.res.at(i);
-    QString str;
-    QString s;
-    s.sprintf("%d", res.count);
-    QString tab_sp = "";
-
-    str = name_res[res.id] + ":";
-    while(str.length() < 30)
-      str.append(" ");
-
-    tab_sp.append("\t");
-
-    str.append(tab_sp + s);    
-    msg.append(str);
-    str.clear();
-    int trend = resData.getTrendById(res.id);
-    str.sprintf("\t Т: %dт. \r", trend);
-    msg.append(str);
-  }
-  ui->log->append(msg);
-
-  updTimer->start();
-  int r = qrand() % 10;
-  postTimer->start(1000*r);
-}
-
-void ResCalc::ReadyReadFirstReply()
-{
-  QString answer = QString::fromUtf8(reply->readAll());
-  QJsonDocument jsonResponse = QJsonDocument::fromJson(answer.toUtf8());
-  QJsonObject jsonObject = jsonResponse.object();
-  QJsonObject bodyObj = jsonObject["Body"].toObject();
-
-  QJsonObject town = bodyObj["town"].toObject();
-  //qDebug() << answer;
-  int lastUpdate = (int)town["lastConsumption"].toDouble();
-  //qDebug() << lastUpdate;
-  int timeOut = 902 + lastUpdate;
-  if(lastUpdate == 0)
-    timeOut = 7;
-
-  secCounter = timeOut;
-  QString str;
-  str.sprintf("Ожидание следующего пересчета: %d", timeOut);
-  ui->log->append(str);
-  updTimer->start();
-}
-
 void ResCalc::ReplyFinished()
 {
   reply->deleteLater();
@@ -285,8 +182,7 @@ void ResCalc::on_pushButton_2_clicked()
   TServer srv = settings.server.at(ui->serverName->currentIndex());
   if(ui->pushButton_2->isChecked())
   {
-//    if(ui->upStatCheck->isChecked())
-      reqPrepare(true);
+    statistic.start(srv.townId);
 
     if(ui->bonusCollect->isChecked())
       corp.start(srv.corpId, srv.userId);
@@ -318,32 +214,7 @@ void ResCalc::on_pushButton_2_clicked()
 
 void ResCalc::timeOut()
 {
-  int sec, min;
-  min = secCounter / 60;
-  sec = secCounter - (min * 60);
-  if(secCounter == 63)
-  {
-    reqPrepare(true);
-  }
-  if(secCounter == 23)
-  {
-    reqPrepare(true);
-  }
 
-  if(secCounter == 0)
-  {
-    reqPrepare(false);
-  }
-
-  if(secCounter < -10)
-  {
-    reqPrepare(true);
-  }
-
-  QString str;
-  str.sprintf("%02d:%02d", min, sec);
-  ui->timeLbl->setText(str);
-  secCounter--;
 }
 
 void ResCalc::reqPrepare(bool correction)
@@ -388,45 +259,13 @@ void ResCalc::reqPrepare(bool correction)
 void ResCalc::on_pushButton_3_clicked()
 {
     ui->log->clear();
-    //setForm.show();
+    setForm.show();
 }
 
-void ResCalc::postTimeout()
-{
-  QString str;
-  QString msg;
-  str.sprintf("--АП %d -> %d ур. --\\r", upStat.lvl, upStat.lvl + 1);
-  str.toUpper();
-  msg.append(str);
-  str.clear();
-  QDateTime dt = QDateTime::currentDateTimeUtc();
-  str = dt.toString("-- dd.MM.yyyy hh:mm -- UTC --\\r");
-  msg.append(str);
-
-  for(int i = 0; i < upStat.res.count(); i++)
-  {
-    TRes res = upStat.res.at(i);
-    str.clear();
-    QString s;
-    int trend = resData.getTrendById(res.id);
-    s.sprintf("%d    (Т: %d т.)\\r", res.count, trend);
-    QString tab_sp = "";
-
-    str = name_res[res.id] + ":";
-    while(str.length() < 20)
-      str.append(" ");
-
-    tab_sp.append("\\t");
-
-    str.append(tab_sp + s);
-    msg.append(str);
-  }
-  postStr(msg);
-}
 
 void ResCalc::postStr(QString msg)
 {
-  TServer srv = settings.server.at(ui->serverName->currentIndex());
+ /* TServer srv = settings.server.at(ui->serverName->currentIndex());
   TForum  forum = settings.forum;
   QByteArray reqUrl;
   reqUrl.append(srv.url);
@@ -472,7 +311,7 @@ void ResCalc::postStr(QString msg)
     connect(forumReply, SIGNAL(finished()),this, SLOT(forumReplyFinished()));
     connect(forumReply, SIGNAL(readyRead()), this, SLOT(forumReadyReadReply()));
   }
-
+*/
 }
 
 void ResCalc::showLocalTime()
@@ -491,8 +330,14 @@ void ResCalc::showLocalTime()
     ui->bonusTimer->setText(str);
     bonTimeLeft--;
   }
+  {
+    int sec, min;
+    min = statistic.timeOut / 60;
+    sec = statistic.timeOut - (min * 60);
+    str.sprintf("%02d:%02d", min, sec);
+    ui->timeLbl->setText(str);
+  }
 }
-
 
 void ResCalc::trainReadyReadReply()
 {
@@ -500,27 +345,6 @@ void ResCalc::trainReadyReadReply()
   trainRep.updateData(answer);
 }
 
-void ResCalc::trainReplyFinished()
-{
-
-}
-
-void ResCalc::on_repairBtn_clicked()
-{
-  for(int i = 0; i < myTrain.count(); i++)
-  {
-    TMyTrain tTr = myTrain.at(i);
-    if(tTr.reliability < ui->reabil->value())
-    {
-      myRepairReq(tTr);
-    }
-  }
-}
-
-void ResCalc::myRepairReq(TMyTrain train)
-{
-
-}
 
 void ResCalc::slotBonusRequest(QByteArray addUrl, QByteArray param, bool enReq)
 {
@@ -568,13 +392,10 @@ void ResCalc::bonusReadyReadReply()
 void ResCalc::corpReadyReadReply()
 {
   QString answer = QString::fromUtf8(corpReply->readAll());
+  //qDebug() << answer;
   corp.updateData(answer);
 }
 
-void ResCalc::corpReplyFinished()
-{
-  //corpReply
-}
 
 void ResCalc::slotCorpRequest(QByteArray addUrl, QByteArray param, bool enReq)
 {
@@ -600,7 +421,7 @@ void ResCalc::slotCorpRequest(QByteArray addUrl, QByteArray param, bool enReq)
 
   //qDebug() << post;
   corpReply = mgr->post(req, post);
-  connect(corpReply, SIGNAL(finished()),this, SLOT(corpReplyFinished()));
+
 
   if(enReq == true)
   {
@@ -611,12 +432,7 @@ void ResCalc::slotCorpRequest(QByteArray addUrl, QByteArray param, bool enReq)
     disconnect(corpReply, SIGNAL(readyRead()), this, SLOT(corpReadyReadReply()));
   }
 }
-/*
-void ResCalc::on_tstBtn_clicked()
-{
-  setForm.show();
-}
-*/
+
 
 void ResCalc::slotBonColDone(int nextWait)
 {
@@ -677,7 +493,7 @@ void ResCalc::slotTrainRequest(QByteArray addUrl, QByteArray param, bool enReq)
 
   //qDebug() << post;
   trainReply = mgr->post(req, post);
-  connect(trainReply, SIGNAL(finished()),this, SLOT(trainReplyFinished()));
+  //connect(trainReply, SIGNAL(finished()),this, SLOT(trainReplyFinished()));
 
   if(enReq == true)
   {
@@ -687,4 +503,48 @@ void ResCalc::slotTrainRequest(QByteArray addUrl, QByteArray param, bool enReq)
   {
     disconnect(trainReply, SIGNAL(readyRead()), this, SLOT(trainReadyReadReply()));
   }
+}
+
+void ResCalc::slotStatisticLog(QString str)
+{
+  QString msg("Статистика. ");
+  msg.append(str);
+
+  QDateTime dt = QDateTime::currentDateTimeUtc();
+  str = dt.toString("[hh:mm:ss] ");
+  msg.prepend(str);
+  ui->log->append(msg);
+}
+
+void ResCalc::slotStatisticRequest(QByteArray addUrl, QByteArray param, bool enReq)
+{
+  TServer srv = settings.server.at(ui->serverName->currentIndex());
+  QByteArray reqUrl;
+  reqUrl.append(srv.url);
+  reqUrl.append(addUrl);
+  QString url(reqUrl);
+  QNetworkRequest req(url);
+  req.setRawHeader("Content-Type","application/json");
+  req.setRawHeader("User-Agent",srv.userAgent);
+  req.setRawHeader("Cookie", srv.cookie);
+
+  QByteArray hash;
+  hash = QCryptographicHash::hash ((param),QCryptographicHash::Md5).toHex();
+  QByteArray post("{\"parameters\":");
+  post.append(param);
+  post.append(",\"client\":1,\"hash\":\"");
+  post.append(hash);
+  post.append("\",\"checksum\":\"");
+  post.append(srv.checkSum);
+  post.append("\"}");
+
+  statisticReply = mgr->post(req, post);
+  //connect(trainReply, SIGNAL(finished()),this, SLOT(trainReplyFinished()));
+  connect(statisticReply, SIGNAL(readyRead()), this, SLOT(statisticReadyReadReply()));
+}
+
+void ResCalc::statisticReadyReadReply()
+{
+  QString answer = QString::fromUtf8(statisticReply->readAll());
+  statistic.updateData(answer);
 }

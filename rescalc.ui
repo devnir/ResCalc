@@ -118,7 +118,7 @@ font-size: 15px;</string>
                 <string>Публиковать статистику АПа</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -164,7 +164,7 @@ font-size: 15px;</string>
                 <string>Авторемонт</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -296,22 +296,6 @@ font-size: 15px;</string>
       </layout>
      </widget>
     </item>
-    <item row="1" column="0">
-     <widget class="QTextEdit" name="log">
-      <property name="maximumSize">
-       <size>
-        <width>877</width>
-        <height>287</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-image: url(:/ContentSlideUS2.jpg);
-    background-position: top right; 
-    background-repeat: no-repeat;
-color: rgb(0, 85, 255);</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
@@ -359,6 +343,33 @@ font-size: 15px;</string>
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QTextEdit" name="log">
+      <property name="maximumSize">
+       <size>
+        <width>877</width>
+        <height>287</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Courier New</family>
+       </font>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-image: url(:/ContentSlideUS2.jpg);
+    background-position: top right; 
+    background-repeat: no-repeat;
+color: rgb(0, 85, 255);</string>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
