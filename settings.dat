@@ -1,0 +1,24 @@
+[List]
+1\Servers\Name=\x411\x43b\x43e\x43a \x446\x438\x43b\x438\x43d\x434\x440\x43e\x432
+1\Servers\Town=\x41a\x44d\x43c\x43f\x442\x430\x443\x43d
+1\Servers\TownId=@ByteArray(b4f57fb2-16bc-441e-8ef5-51ccde0fd754)
+1\Servers\ServerUrl=@ByteArray(http://s6.railnation.ru)
+1\Servers\UAgent="@ByteArray(Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36)"
+1\Servers\Cookie="@ByteArray(PHPSESSID=g3825c410ciog3cfpre0f3vt55)"
+1\Servers\CheckSum=@ByteArray(ea24d4af2c566004782f750f940615e5)
+1\Servers\UserId=@ByteArray(87884e9e-f3a3-b3f0-d2db-3f8e7f7441b8)
+1\Servers\CorpId=@ByteArray(49ca6200-ee27-0ce0-abe5-489dc1ba89ac)
+1\Forum\Name=@ByteArray(Up statistic)
+1\Forum\Id=@ByteArray(000000000000000000000000000000000000000000000000000000000)
+2\Servers\Name=Grand Central
+2\Servers\Town=Boise
+2\Servers\TownId=@ByteArray(009113c2-f276-4d3c-8dd0-f72ebbba4c4f)
+2\Servers\ServerUrl=@ByteArray(http://s102.railnation.ru)
+2\Servers\UAgent="@ByteArray(Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36)"
+2\Servers\Cookie="@ByteArray(PHPSESSID=sfcju6nm0f5lpd5f3gv36k6bk6)"
+2\Servers\CheckSum=@ByteArray(ea24d4af2c566004782f750f940615e5)
+2\Servers\UserId=@ByteArray(82d034d7-70c3-2157-0995-a490dbc1372d)
+2\Servers\CorpId=@ByteArray(23f7692e-c485-6e87-90f4-ea92a49ff7c8)
+2\Forum\Name=@ByteArray(noTheme)
+2\Forum\Id=@ByteArray(0-000-000---0000000000)
+size=2
