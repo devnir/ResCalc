@@ -80,8 +80,10 @@ class ResCalc : public QMainWindow
     void bonusReadyReadReply();
     void bonusReplyFinished();
     void corpReadyReadReply();
+    void corpReplyFinished();
 
     void slotCorpRequest(QByteArray addUrl, QByteArray param, bool enReq);
+
     void slotBonColTimeOut();
     void slotBonColDone(int nextWait);
     void slotBonLog(QString str);
@@ -95,7 +97,7 @@ class ResCalc : public QMainWindow
 
     void on_pushButton_2_clicked();
     void on_pushButton_3_clicked();
-
+    void slotTakedBonus();
   private:
     Ui::ResCalc   *ui;
     TSettings      settings;

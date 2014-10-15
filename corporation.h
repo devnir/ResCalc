@@ -27,6 +27,7 @@ class Corporation : public QObject
     void signalRequest(QByteArray addUrl, QByteArray param, bool enReq);
     void checkDone(int nextWait);
     void signalPutToLog(QString str);
+    void takedBonus();
   public slots:
     void slotBuildingsTimerTimeOut();
   private:

@@ -2,11 +2,12 @@
 #include "ui_rescalc.h"
 #include <QDateTime>
 
-
+int bonCollected = 0;
 ResCalc::ResCalc(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::ResCalc)
 {
+  bonCollected = 0;
   ui->setupUi(this);
   bonTimeLeft = 0;
   updTimer = new QTimer(this);
@@ -32,6 +33,7 @@ ResCalc::ResCalc(QWidget *parent) :
 
   connect(&bonus, SIGNAL(signalRequest(QByteArray,QByteArray, bool)), this, SLOT(slotBonusRequest(QByteArray,QByteArray, bool)));
   connect(&corp, SIGNAL(signalRequest(QByteArray,QByteArray, bool)), this, SLOT(slotCorpRequest(QByteArray,QByteArray, bool)));
+  connect(&corp, SIGNAL(takedBonus()), this, SLOT(slotTakedBonus()));
   connect(&trainRep, SIGNAL(signalRequest(QByteArray,QByteArray,bool)),this, SLOT(slotTrainRequest(QByteArray,QByteArray,bool)));
   connect(&trainRep, SIGNAL(signalPutToLog(QString)), this, SLOT(slotTrainLog(QString)));
 
@@ -185,7 +187,10 @@ void ResCalc::on_pushButton_2_clicked()
     statistic.start(srv.townId);
 
     if(ui->bonusCollect->isChecked())
+    {
+      bonCollected = 0;
       corp.start(srv.corpId, srv.userId);
+    }
 
     if(ui->repairCheckBox->isChecked())
     {
@@ -248,18 +253,18 @@ void ResCalc::reqPrepare(bool correction)
   if(correction)
   {
     ui->log->append("Синхронизация времени.");
-    connect(reply, SIGNAL(readyRead()), this, SLOT(ReadyReadFirstReply()));
+    connect(reply, SIGNAL(readChannelFinished()), this, SLOT(ReadyReadFirstReply()));
   }
   else
   {
-    connect(reply, SIGNAL(readyRead()), this, SLOT(ReadyReadReply()));
+    connect(reply, SIGNAL(readChannelFinished()), this, SLOT(ReadyReadReply()));
   }
 }
 
 void ResCalc::on_pushButton_3_clicked()
 {
     ui->log->clear();
-    setForm.show();
+    //setForm.show();
 }
 
 
@@ -309,7 +314,7 @@ void ResCalc::postStr(QString msg)
   {
     forumReply = mgr->post(req, post);
     connect(forumReply, SIGNAL(finished()),this, SLOT(forumReplyFinished()));
-    connect(forumReply, SIGNAL(readyRead()), this, SLOT(forumReadyReadReply()));
+    connect(forumReply, SIGNAL(readChannelFinished()), this, SLOT(forumReadyReadReply()));
   }
 */
 }
@@ -336,6 +341,10 @@ void ResCalc::showLocalTime()
     sec = statistic.timeOut - (min * 60);
     str.sprintf("%02d:%02d", min, sec);
     ui->timeLbl->setText(str);
+
+    str.clear();
+    str.sprintf("Собрано: %d", bonCollected);
+    ui->bonColl->setText(str);
   }
 }
 
@@ -372,7 +381,7 @@ void ResCalc::slotBonusRequest(QByteArray addUrl, QByteArray param, bool enReq)
 
   if(enReq ==true)
   {
-    connect(bonusReply, SIGNAL(readyRead()), this, SLOT(bonusReadyReadReply()));
+    connect(bonusReply, SIGNAL(readChannelFinished()), this, SLOT(bonusReadyReadReply()));
     connect(bonusReply, SIGNAL(finished()),this, SLOT(bonusReplyFinished()));
   }
 }
@@ -391,7 +400,18 @@ void ResCalc::bonusReadyReadReply()
 
 void ResCalc::corpReadyReadReply()
 {
+
   QString answer = QString::fromUtf8(corpReply->readAll());
+  //corpReply->re
+  //qDebug() << answer;
+  corp.updateData(answer);
+
+}
+
+void ResCalc::corpReplyFinished()
+{
+  QString answer = QString::fromUtf8(corpReply->readAll());
+  //corpReply->re
   //qDebug() << answer;
   corp.updateData(answer);
 }
@@ -419,17 +439,18 @@ void ResCalc::slotCorpRequest(QByteArray addUrl, QByteArray param, bool enReq)
   post.append(srv.checkSum);
   post.append("\"}");
 
-  //qDebug() << post;
+  qDebug() << post;
   corpReply = mgr->post(req, post);
+  corpReply->setReadBufferSize(0);
 
 
   if(enReq == true)
   {
-    connect(corpReply, SIGNAL(readyRead()), this, SLOT(corpReadyReadReply()));
+    connect(corpReply, SIGNAL(readChannelFinished()), this, SLOT(corpReadyReadReply()));
   }
   else
   {
-    disconnect(corpReply, SIGNAL(readyRead()), this, SLOT(corpReadyReadReply()));
+    disconnect(corpReply, SIGNAL(readChannelFinished()), this, SLOT(corpReadyReadReply()));
   }
 }
 
@@ -497,11 +518,11 @@ void ResCalc::slotTrainRequest(QByteArray addUrl, QByteArray param, bool enReq)
 
   if(enReq == true)
   {
-    connect(trainReply, SIGNAL(readyRead()), this, SLOT(trainReadyReadReply()));
+    connect(trainReply, SIGNAL(readChannelFinished()), this, SLOT(trainReadyReadReply()));
   }
   else
   {
-    disconnect(trainReply, SIGNAL(readyRead()), this, SLOT(trainReadyReadReply()));
+    disconnect(trainReply, SIGNAL(readChannelFinished()), this, SLOT(trainReadyReadReply()));
   }
 }
 
@@ -540,11 +561,16 @@ void ResCalc::slotStatisticRequest(QByteArray addUrl, QByteArray param, bool enR
 
   statisticReply = mgr->post(req, post);
   //connect(trainReply, SIGNAL(finished()),this, SLOT(trainReplyFinished()));
-  connect(statisticReply, SIGNAL(readyRead()), this, SLOT(statisticReadyReadReply()));
+  connect(statisticReply, SIGNAL(readChannelFinished()), this, SLOT(statisticReadyReadReply()));
 }
 
 void ResCalc::statisticReadyReadReply()
 {
   QString answer = QString::fromUtf8(statisticReply->readAll());
   statistic.updateData(answer);
+}
+
+void ResCalc::slotTakedBonus()
+{
+  bonCollected++;
 }

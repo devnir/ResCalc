@@ -57,7 +57,8 @@ void Corporation::updateData(QString answer)
   QJsonObject jsonObject = jsonResponse.object();
   QJsonObject bodyObj = jsonObject["Body"].toObject();
   rndTmr = qrand() % 2000;
-  //
+  //qDebug("-----------------------------------------------------------------");
+  //qDebug() << answer;
   if(bodyObj.contains("members"))
   {
     if(bodyObj["members"].isArray())
@@ -71,12 +72,12 @@ void Corporation::updateData(QString answer)
         tMem.name =jMem["name"].toString();
         tMem.uid.append(jMem["user_id"].toString());
         members.append(tMem);
-        //qDebug() << "Add new mem";
+//        qDebug() << "Add new mem";
       }
     }
     else
     {
-      //qDebug() << "no any mem";
+      qDebug() << "no any mem";
     }
     getBuildingTimer->start(rndTmr + 1000);
   }
@@ -90,7 +91,7 @@ void Corporation::updateData(QString answer)
         int productionTime = build["productionTime"].toDouble();
         if(productionTime == 0)
         {
-          //delay(1);
+          //delay(3);
           TCorpMem tMem = members.at(0);
           getUserBonus(i, tMem.uid);
           QString str("Собрано с ");
@@ -98,6 +99,7 @@ void Corporation::updateData(QString answer)
           str.append(" у ");
           str.append(tMem.name);          
           emit this->signalPutToLog(str);
+          emit this->takedBonus();
         }
         else
         {
@@ -137,6 +139,7 @@ void Corporation::updateData(QString answer)
 
     //emit this->signalPutToLog(str);
     getBuildingTimer->start(1000);
+      qDebug("Ошибка разбора");
   }
 }
 

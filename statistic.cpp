@@ -33,7 +33,7 @@ Statistic::Statistic(QObject *parent) :
   timer->setInterval(1000);
   connect(timer, SIGNAL(timeout()), this, SLOT(slotTimeOut()));
   timeOut = 0;
-  timer->start();
+  timer->start(1000);
 }
 
 
@@ -50,6 +50,7 @@ void Statistic::start(QByteArray townId)
 
 void Statistic::updateData(QString answer)
 {
+  //qDebug() << answer;
   if(state == FirstRun)
   {
     firstUpdate(answer);
@@ -88,9 +89,11 @@ void Statistic::firstUpdate(QString answer)
 
 void Statistic::slotTimeOut()
 {
+  timer->stop();
   if(timeOut > 0)
   {
     timeOut--;
+    timer->start(1000);
     return;
   }
 
@@ -111,6 +114,7 @@ void Statistic::slotTimeOut()
     emit this->signalRequest(addUrl, param, true);
     timeOut = 3;
   }
+  timer->start(1000);
 }
 
 void Statistic::calcStat(QString answer)
@@ -123,9 +127,6 @@ void Statistic::calcStat(QString answer)
 
   int lastUpdate = 900 + (int)town["lastConsumption"].toDouble();
   qDebug() << (int)town["lastConsumption"].toDouble();
-  //QString msg;
-  //msg.sprintf("Задержка %d", (int)town["lastConsumption"].toDouble());
-  //emit this->signalPutToLog(msg);
   if(lastUpdate == 900)
   {
     timeOut = 1;
@@ -162,9 +163,7 @@ void Statistic::calcStat(QString answer)
     calcVariables();
   }
   else
-  {/*
-    state = StatCalc;
-    timeOut = 1;*/
+  {
     qDebug() << "error calculation";
   }
 }
