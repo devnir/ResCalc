@@ -13,7 +13,8 @@ typedef enum
 {
   FirstRun = 0,
   TimeCorrection,
-  StatCalc
+  StatCalc,
+  GetForums
 }TState;
 
 typedef struct
@@ -41,17 +42,26 @@ class Statistic : public QObject
     explicit Statistic(QObject *parent = 0);
     void start(QByteArray townId);
     void updateData(QString answer);
-    int timeOut;
+    int  timeOut;
+    bool enPrintToForum;
+    int  minResCount;
+    void setForumTheme(QString theme);
 private:
     QTimer *timer;
     QByteArray cityId;
+    QByteArray forumId;
     TState state;
     QVector<TRes> curRes;
     QVector<TRes> prevRes;
     TUpStat       upStat;
+    QString forumTheme;
+    QByteArray forumPost;
+    QTimer    *forumPostTimer;
 
+    void delay( int secondsToWait );
     void firstUpdate(QString answer);
     void calcStat(QString answer);
+    void forumThemes(QString answer);
     void calcVariables();
     void printLog();
   signals:
@@ -59,6 +69,7 @@ private:
     void signalPutToLog(QString str);
   public slots:
     void slotTimeOut();
+    void slotForumPostTimeout();
 };
 
 #endif // STATISTIC_H

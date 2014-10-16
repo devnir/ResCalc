@@ -98,6 +98,11 @@ class ResCalc : public QMainWindow
     void on_pushButton_2_clicked();
     void on_pushButton_3_clicked();
     void slotTakedBonus();
+    void slotTakedLotery();
+    void on_upStatCheck_clicked();
+
+    void on_upBoxVount_valueChanged(int arg1);
+
   private:
     Ui::ResCalc   *ui;
     TSettings      settings;

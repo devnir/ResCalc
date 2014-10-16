@@ -2,6 +2,7 @@
 #include "ui_rescalc.h"
 #include <QDateTime>
 
+int loteryCollected = 0;
 int bonCollected = 0;
 ResCalc::ResCalc(QWidget *parent) :
   QMainWindow(parent),
@@ -34,6 +35,8 @@ ResCalc::ResCalc(QWidget *parent) :
   connect(&bonus, SIGNAL(signalRequest(QByteArray,QByteArray, bool)), this, SLOT(slotBonusRequest(QByteArray,QByteArray, bool)));
   connect(&corp, SIGNAL(signalRequest(QByteArray,QByteArray, bool)), this, SLOT(slotCorpRequest(QByteArray,QByteArray, bool)));
   connect(&corp, SIGNAL(takedBonus()), this, SLOT(slotTakedBonus()));
+  connect(&corp, SIGNAL(takedLotery()), this, SLOT(slotTakedLotery()));
+
   connect(&trainRep, SIGNAL(signalRequest(QByteArray,QByteArray,bool)),this, SLOT(slotTrainRequest(QByteArray,QByteArray,bool)));
   connect(&trainRep, SIGNAL(signalPutToLog(QString)), this, SLOT(slotTrainLog(QString)));
 
@@ -184,11 +187,14 @@ void ResCalc::on_pushButton_2_clicked()
   TServer srv = settings.server.at(ui->serverName->currentIndex());
   if(ui->pushButton_2->isChecked())
   {
+    statistic.setForumTheme(ui->forumNameEdit->text());
+    ui->forumNameEdit->setEnabled(false);
     statistic.start(srv.townId);
 
     if(ui->bonusCollect->isChecked())
     {
       bonCollected = 0;
+      loteryCollected = 0;
       corp.start(srv.corpId, srv.userId);
     }
 
@@ -202,6 +208,7 @@ void ResCalc::on_pushButton_2_clicked()
     //ui->upStatCheck->setEnabled(false);
     ui->bonusCollect->setEnabled(false);
     ui->pushButton_2->setText("Stop");
+    ui->serverName->setEnabled(false);
   }
   else
   {
@@ -214,6 +221,8 @@ void ResCalc::on_pushButton_2_clicked()
     //ui->upStatCheck->setEnabled(true);
     ui->bonusCollect->setEnabled(true);
     ui->repairCheckBox->setEnabled(true);
+    ui->forumNameEdit->setEnabled(true);
+    ui->serverName->setEnabled(true);
   }
 }
 
@@ -343,7 +352,7 @@ void ResCalc::showLocalTime()
     ui->timeLbl->setText(str);
 
     str.clear();
-    str.sprintf("Собрано: %d", bonCollected);
+    str.sprintf("Собрано: %d; Л: %d", bonCollected, loteryCollected);
     ui->bonColl->setText(str);
   }
 }
@@ -439,7 +448,7 @@ void ResCalc::slotCorpRequest(QByteArray addUrl, QByteArray param, bool enReq)
   post.append(srv.checkSum);
   post.append("\"}");
 
-  qDebug() << post;
+  //qDebug() << post;
   corpReply = mgr->post(req, post);
   corpReply->setReadBufferSize(0);
 
@@ -574,3 +583,19 @@ void ResCalc::slotTakedBonus()
 {
   bonCollected++;
 }
+
+void ResCalc::slotTakedLotery()
+{
+  loteryCollected++;
+}
+
+void ResCalc::on_upStatCheck_clicked()
+{
+  statistic.enPrintToForum = ui->upStatCheck->isChecked();
+}
+
+void ResCalc::on_upBoxVount_valueChanged(int arg1)
+{
+    statistic.minResCount = ui->upBoxVount->value();
+}
+

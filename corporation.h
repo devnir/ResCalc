@@ -23,11 +23,14 @@ class Corporation : public QObject
     void updateData(QString answer);
     void getUserBuildings();
     void getUserBonus(int buildId, QByteArray userId);
+    void checkLotery();
+    void getLotery();
   signals:
     void signalRequest(QByteArray addUrl, QByteArray param, bool enReq);
     void checkDone(int nextWait);
     void signalPutToLog(QString str);
     void takedBonus();
+    void takedLotery();
   public slots:
     void slotBuildingsTimerTimeOut();
   private:

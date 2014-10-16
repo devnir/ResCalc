@@ -5,7 +5,13 @@
 //edd8c452-b501-5d54-77c5-e0fcfb6f5c9c
 bool errPresent = false;
 #include <QTime>
+/*lotery
+ * 16 - + на 24 часа
+ *6 - престиж
+ *2 - деньги
 
+
+*/
 void Corporation::delay( int secondsToWait )
 {
     QTime dieTime = QTime::currentTime().addSecs(secondsToWait );
@@ -129,15 +135,34 @@ void Corporation::updateData(QString answer)
       }
     }
   }
-  else    
+  // lotery
+  else if(bodyObj.contains("freeSlot")&& bodyObj.contains("lastWin"))
   {
-    //qDebug() << answer;
+    bool freeLotery = bodyObj["freeSlot"].toBool();
+    if(freeLotery)
+    {
+      getLotery();
+    }
+  }
+  else if(bodyObj.contains("win"))
+  {
+    int resId = (int)bodyObj["win"].toDouble();
+    QString str;
+    str.sprintf("ЛОТЕРЕЯ!! %d", resId);
+
+    QByteArray addUrl;
+    addUrl.append("/web/rpc/flash.php?interface=LotteryInterface&method=rewardLottery");
+    QByteArray param("[]");
+    emit this->signalRequest(addUrl, param, false);
+    emit this->signalPutToLog(str);
+  }
+  else    
+  {    
     errPresent = true;
     QString str;
     str.sprintf("Ошибка разбора. Повтор через: %dс",
                 NextWait);
 
-    //emit this->signalPutToLog(str);
     getBuildingTimer->start(1000);
       qDebug("Ошибка разбора");
   }
@@ -174,7 +199,7 @@ void Corporation::slotBuildingsTimerTimeOut()
     {
       NextWait = 60 + qrand() % 60;
     }
-
+    checkLotery();
     str.sprintf("Завершено. Следующая проверка через %dс",
                 NextWait);
 
@@ -211,5 +236,22 @@ void Corporation::getUserBonus(int buildId, QByteArray userId)
 void Corporation::stop()
 {
   getBuildingTimer->stop();
+}
+
+void Corporation::checkLotery()
+{
+  QByteArray addUrl;
+  addUrl.append("/web/rpc/flash.php?interface=LotteryInterface&method=isForFree");
+  QByteArray param("[]");
+  emit this->signalRequest(addUrl, param, true);
+}
+
+void Corporation::getLotery()
+{
+  QByteArray addUrl;
+  addUrl.append("/web/rpc/flash.php?interface=LotteryInterface&method=buy");
+  QByteArray param("[]");
+  emit this->takedLotery();
+  emit this->signalRequest(addUrl, param, true);
 }
 

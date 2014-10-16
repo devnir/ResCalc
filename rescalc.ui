@@ -141,8 +141,8 @@ font-size: 15px;</string>
      <widget class="QFrame" name="TopFrame">
       <property name="maximumSize">
        <size>
-        <width>927</width>
-        <height>128</height>
+        <width>928</width>
+        <height>156</height>
        </size>
       </property>
       <property name="styleSheet">
@@ -222,6 +222,13 @@ font-size: 15px;</string>
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="forumNameEdit">
+           <property name="text">
+            <string>Занимательные циферки</string>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_7">
