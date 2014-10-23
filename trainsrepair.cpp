@@ -27,8 +27,10 @@ void trainsRepair::stop()
 void trainsRepair::TimeOut()
 {
    QByteArray addUrl;
-   addUrl.append("/web/rpc/flash.php?interface=TrainInterface&method=getMyTrains");
-   QByteArray param("[true]");
+//   addUrl.append("/web/rpc/flash.php?interface=TrainInterface&method=getMyTrains");
+//   QByteArray param("[true]");
+   addUrl.append("/web/rpc/flash.php?interface=PersonalityInterface&method=getAuctions");
+   QByteArray param("[]");
    emit this->signalRequest(addUrl, param, true);
    int interval = 1000 * 60 * (25 + qrand() % 10);
    int m = interval /1000 / 60;
@@ -42,11 +44,14 @@ void trainsRepair::TimeOut()
 }
 
 void trainsRepair::updateData(QString answer)
-{
-  //qDebug() << answer;
+{  
   QJsonDocument jsonResponse = QJsonDocument::fromJson(answer.toUtf8());
   QJsonObject jsonObject = jsonResponse.object();
   QJsonArray bodyObj = jsonObject["Body"].toArray();
+
+  QJsonObject to = jsonObject["Body"].toObject();
+  qDebug() << answer;
+
   for(int i = 0; i < bodyObj.count(); i++)
   {
     QJsonObject train = bodyObj.at(i).toObject();

@@ -129,6 +129,13 @@ font-size: 15px;</string>
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="tstBtn">
+        <property name="text">
+         <string>TstBtn</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>by DevNir (to.DevNir@gmail.com)</string>

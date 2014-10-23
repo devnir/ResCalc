@@ -357,7 +357,7 @@ void Statistic::forumThemes(QString answer)
       {
         forumId.clear();
         forumId.append(ob["ID"].toString());
-        qDebug() << forumId;
+        //qDebug() << forumId;
       }
     }
   }

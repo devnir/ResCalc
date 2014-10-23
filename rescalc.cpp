@@ -2,6 +2,8 @@
 #include "ui_rescalc.h"
 #include <QDateTime>
 
+#define KSEVIJA 1
+
 int loteryCollected = 0;
 int bonCollected = 0;
 ResCalc::ResCalc(QWidget *parent) :
@@ -135,28 +137,29 @@ void ResCalc::loadSettings()
     settings.server.append(srv);
   }
   set.endArray();
-
+#ifdef KSEVIJA
   if(count == 0)
   {
-    setWindowTitle(windowTitle() + " Marivanna edition");
+    setWindowTitle(windowTitle() + " Ксения edition");
       set.beginGroup("Servers");
       TServer srv;
-      srv.name = set.value("Name", "Блок Цилиндров").toString();
-      srv.town = set.value("Town", "Кэмптаун").toString();
-      srv.townId = set.value("TownId", "b4f57fb2-16bc-441e-8ef5-51ccde0fd754").toByteArray();
-      srv.url = set.value("ServerUrl", "http://s6.railnation.ru").toByteArray();
-      srv.userAgent = set.value("UAgent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.101 Safari/537.36").toByteArray();
-      srv.cookie = set.value("Cookie","_ym_visorc_23073562=b; _ym_visorc_22363723=b; PHPSESSID=el7pe740e2hp5o4fsklsi48ng2").toByteArray();
+      srv.name = set.value("Name", "Угольная топка").toString();
+      srv.town = set.value("Town", "Вишингтон").toString();
+      srv.townId = set.value("TownId", "f5a66614-fb3b-4d45-a758-6c38364f7e66").toByteArray();
+      srv.url = set.value("ServerUrl", "http://s2.railnation.ru").toByteArray();
+      srv.userAgent = set.value("UAgent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.104 Safari/537.36").toByteArray();
+      srv.cookie = set.value("Cookie","PHPSESSID=dafpidigs7m0eks8aeqnn06ac0; _ym_visorc_22363723=b").toByteArray();
       srv.checkSum = set.value("CheckSum", "ea24d4af2c566004782f750f940615e5").toByteArray();
-      srv.userId = set.value("UserId", "98c378ee-3b4c-c6b0-0f33-e5c8e8e1e709").toByteArray();
-      srv.corpId = set.value("CorpId", "49ca6200-ee27-0ce0-abe5-489dc1ba89ac").toByteArray();
+      srv.userId = set.value("UserId", "83b242a2-4478-5e9f-6005-509c9f96c289").toByteArray();
+      srv.corpId = set.value("CorpId", "94be61ee-9447-1f27-4d72-9fc543d78d7e").toByteArray();
       set.endGroup();
       set.beginGroup("Forum");
-      settings.forum.Name = set.value("Name", "UP Statistic").toByteArray();
-      settings.forum.id = set.value("Id", "40a4ddb3-186d-9829-f4b9-462a6907c77f").toByteArray();
+      settings.forum.Name = set.value("Name", "").toByteArray();
+      settings.forum.id = set.value("Id", "").toByteArray();
       set.endGroup();
       settings.server.append(srv);
   }
+#endif
   ui->serverName->clear();
   for(int i = 0; i < settings.server.count(); i++)
   {
@@ -309,7 +312,7 @@ void ResCalc::postStr(QString msg)
   post.append(srv.checkSum);
   post.append("\"}");
 
-  //qDebug() << post;  
+  //qDebug() << post;
   bool postEnable = false;
   for(int i = 0; i < upStat.res.count(); i++)
   {
@@ -599,3 +602,38 @@ void ResCalc::on_upBoxVount_valueChanged(int arg1)
     statistic.minResCount = ui->upBoxVount->value();
 }
 
+
+void ResCalc::on_tstBtn_clicked()
+{
+  TServer srv = settings.server.at(ui->serverName->currentIndex());
+  QByteArray addUrl("/web/rpc/flash.php?interface=ResearchInterface&method=researchTechnology");
+  QByteArray param("[240001,1]");
+  QByteArray reqUrl;
+  reqUrl.append(srv.url);
+  reqUrl.append(addUrl);
+  QString url(reqUrl);
+  QNetworkRequest req(url);
+  req.setRawHeader("Content-Type","application/json");
+  req.setRawHeader("User-Agent",srv.userAgent);
+  req.setRawHeader("Cookie", srv.cookie);
+
+  QByteArray hash;
+  hash = QCryptographicHash::hash ((param),QCryptographicHash::Md5).toHex();
+  QByteArray post("{\"parameters\":");
+  post.append(param);
+  post.append(",\"client\":1,\"hash\":\"");
+  post.append(hash);
+  post.append("\",\"checksum\":\"");
+  post.append(srv.checkSum);
+  post.append("\"}");
+
+  tstReply = mgr->post(req, post);
+
+  connect(tstReply, SIGNAL(readChannelFinished()), this, SLOT(tstReadSlotFinish()));
+}
+
+void ResCalc::tstReadSlotFinish()
+{
+  QString answer = QString::fromUtf8(tstReply->readAll());
+  qDebug() << answer;
+}

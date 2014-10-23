@@ -6,13 +6,15 @@
 bool errPresent = false;
 #include <QTime>
 /*lotery
- * 16 - + на 24 часа
- *6 - престиж
- *2 - деньги
+ * 1 - улучшение
+ * 2 - деньги
+ * 4 - деньги
+ * 6 - престиж
  * 8 - голд
-
-
-*/
+ * 16 - + на 24 часа
+ * 19 - ОИ
+ * 24 - ваучер на одежду
+ */
 void Corporation::delay( int secondsToWait )
 {
     QTime dieTime = QTime::currentTime().addSecs(secondsToWait );

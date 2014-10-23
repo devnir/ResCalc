@@ -103,6 +103,11 @@ class ResCalc : public QMainWindow
 
     void on_upBoxVount_valueChanged(int arg1);
 
+    void on_tstBtn_clicked();
+
+    void tstReadSlotFinish();
+
+
   private:
     Ui::ResCalc   *ui;
     TSettings      settings;
@@ -110,6 +115,7 @@ class ResCalc : public QMainWindow
     QNetworkAccessManager *mgr;
     QNetworkReply *forumReply;
     QNetworkReply *reply;
+    QNetworkReply *tstReply;
     QNetworkReply *trainReply;
     QNetworkReply *bonusReply;
     QNetworkReply *corpReply;
