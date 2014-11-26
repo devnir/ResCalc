@@ -185,6 +185,13 @@ font-size: 15px;</string>
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="finalBox">
+           <property name="text">
+            <string>Финал</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
             <widget class="QCheckBox" name="upStatCheck">

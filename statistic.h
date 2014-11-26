@@ -45,6 +45,7 @@ class Statistic : public QObject
     int  timeOut;
     bool enPrintToForum;
     int  minResCount;
+    bool isFinal;
     void setForumTheme(QString theme);
 private:
     QTimer *timer;
@@ -70,6 +71,7 @@ private:
   public slots:
     void slotTimeOut();
     void slotForumPostTimeout();
+    void slotIsFinalChange(bool final);
 };
 
 #endif // STATISTIC_H

@@ -2,8 +2,8 @@
 #include "ui_rescalc.h"
 #include <QDateTime>
 
-#define KSEVIJA 1
-
+//#define KSEVIJA 1
+#define MARIVANNA
 int loteryCollected = 0;
 int bonCollected = 0;
 ResCalc::ResCalc(QWidget *parent) :
@@ -145,6 +145,29 @@ void ResCalc::loadSettings()
       TServer srv;
       srv.name = set.value("Name", "Угольная топка").toString();
       srv.town = set.value("Town", "Вишингтон").toString();
+      srv.townId = set.value("TownId", "f5a66614-fb3b-4d45-a758-6c38364f7e66").toByteArray();
+      srv.url = set.value("ServerUrl", "http://s2.railnation.ru").toByteArray();
+      srv.userAgent = set.value("UAgent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.104 Safari/537.36").toByteArray();
+      srv.cookie = set.value("Cookie","PHPSESSID=dafpidigs7m0eks8aeqnn06ac0; _ym_visorc_22363723=b").toByteArray();
+      srv.checkSum = set.value("CheckSum", "ea24d4af2c566004782f750f940615e5").toByteArray();
+      srv.userId = set.value("UserId", "83b242a2-4478-5e9f-6005-509c9f96c289").toByteArray();
+      srv.corpId = set.value("CorpId", "94be61ee-9447-1f27-4d72-9fc543d78d7e").toByteArray();
+      set.endGroup();
+      set.beginGroup("Forum");
+      settings.forum.Name = set.value("Name", "").toByteArray();
+      settings.forum.id = set.value("Id", "").toByteArray();
+      set.endGroup();
+      settings.server.append(srv);
+  }
+#endif
+#ifdef MARIVANNA
+  if(count == 0)
+  {
+    setWindowTitle(windowTitle() + "Marivanna edition");
+      set.beginGroup("Servers");
+      TServer srv;
+      srv.name = set.value("Name", "Some Server").toString();
+      srv.town = set.value("Town", "Some Town").toString();
       srv.townId = set.value("TownId", "f5a66614-fb3b-4d45-a758-6c38364f7e66").toByteArray();
       srv.url = set.value("ServerUrl", "http://s2.railnation.ru").toByteArray();
       srv.userAgent = set.value("UAgent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.104 Safari/537.36").toByteArray();
@@ -636,4 +659,9 @@ void ResCalc::tstReadSlotFinish()
 {
   QString answer = QString::fromUtf8(tstReply->readAll());
   qDebug() << answer;
+}
+
+void ResCalc::on_finalBox_clicked()
+{
+   statistic.slotIsFinalChange(ui->finalBox->isChecked());
 }

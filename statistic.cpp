@@ -77,6 +77,7 @@ Statistic::Statistic(QObject *parent) :
   enPrintToForum = false;
   minResCount = 1000;
   forumId.clear();
+  isFinal = false;
   connect(forumPostTimer, SIGNAL(timeout()), this, SLOT(slotForumPostTimeout()));
 }
 
@@ -237,7 +238,7 @@ void Statistic::calcVariables()
         cr.tend = cr.amount - pr.amount;
       }
     }
-    if(cr.priority == 1)
+    if((cr.priority == 1)||(isFinal))
     {
       upStat.res.append(cr);
     }
@@ -385,6 +386,12 @@ void Statistic::slotForumPostTimeout()
     emit this->signalRequest(addUrl, forumPost, false);
   }
 }
+
+void Statistic::slotIsFinalChange(bool final)
+{
+  isFinal = final;
+}
+
 
 
 

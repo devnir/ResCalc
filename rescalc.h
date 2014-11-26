@@ -108,6 +108,8 @@ class ResCalc : public QMainWindow
     void tstReadSlotFinish();
 
 
+    void on_finalBox_clicked();
+
   private:
     Ui::ResCalc   *ui;
     TSettings      settings;
