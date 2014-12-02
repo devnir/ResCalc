@@ -238,7 +238,7 @@ void Statistic::calcVariables()
         cr.tend = cr.amount - pr.amount;
       }
     }
-    if((cr.priority == 1)||(isFinal))
+    if((cr.priority == 1)/*||(isFinal)*/)
     {
       upStat.res.append(cr);
     }
