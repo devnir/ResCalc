@@ -27,10 +27,10 @@ void trainsRepair::stop()
 void trainsRepair::TimeOut()
 {
    QByteArray addUrl;
-//   addUrl.append("/web/rpc/flash.php?interface=TrainInterface&method=getMyTrains");
-//   QByteArray param("[true]");
-   addUrl.append("/web/rpc/flash.php?interface=PersonalityInterface&method=getAuctions");
-   QByteArray param("[]");
+   addUrl.append("/web/rpc/flash.php?interface=TrainInterface&method=getMyTrains");
+   QByteArray param("[true]");
+//   addUrl.append("/web/rpc/flash.php?interface=PersonalityInterface&method=getAuctions");
+//   QByteArray param("[]");
    emit this->signalRequest(addUrl, param, true);
    int interval = 1000 * 60 * (25 + qrand() % 10);
    int m = interval /1000 / 60;

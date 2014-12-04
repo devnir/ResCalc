@@ -21,6 +21,7 @@
 #include "settingsadd.h"
 #include "trainsrepair.h"
 #include "statistic.h"
+#include "trainsheduler.h"
 
 /*
  * Структура для ремонта поездов
@@ -129,6 +130,7 @@ class ResCalc : public QMainWindow
     settingsAdd    setForm;
     trainsRepair   trainRep;
     Statistic      statistic;
+    trainSheduler  tSheduler;
 
     void loadSettings();
     void saveSettings();

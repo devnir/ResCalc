@@ -629,6 +629,9 @@ void ResCalc::on_upBoxVount_valueChanged(int arg1)
 void ResCalc::on_tstBtn_clicked()
 {
   TServer srv = settings.server.at(ui->serverName->currentIndex());
+  tSheduler.init(srv);
+  tSheduler.show();
+  /*TServer srv = settings.server.at(ui->serverName->currentIndex());
   QByteArray addUrl("/web/rpc/flash.php?interface=ResearchInterface&method=researchTechnology");
   QByteArray param("[240001,1]");
   QByteArray reqUrl;
@@ -652,7 +655,7 @@ void ResCalc::on_tstBtn_clicked()
 
   tstReply = mgr->post(req, post);
 
-  connect(tstReply, SIGNAL(readChannelFinished()), this, SLOT(tstReadSlotFinish()));
+  connect(tstReply, SIGNAL(readChannelFinished()), this, SLOT(tstReadSlotFinish()));*/
 }
 
 void ResCalc::tstReadSlotFinish()

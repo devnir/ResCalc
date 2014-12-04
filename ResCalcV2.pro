@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     corporation.cpp \
     settingsadd.cpp \
     trainsrepair.cpp \
-    statistic.cpp
+    statistic.cpp \
+    trainsheduler.cpp
 
 HEADERS  += rescalc.h \
     resourcedata.h \
@@ -28,10 +29,12 @@ HEADERS  += rescalc.h \
     corporation.h \
     settingsadd.h \
     trainsrepair.h \
-    statistic.h
+    statistic.h \
+    trainsheduler.h
 
 FORMS    += rescalc.ui \
-    settingsadd.ui
+    settingsadd.ui \
+    trainsheduler.ui
 
 RESOURCES += \
     res.qrc
