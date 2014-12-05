@@ -20,6 +20,7 @@
 #include <QGraphicsItem>
 #include <QFont>
 #include <QPainterPath>
+#include "getxmldata.h"
 
 
 namespace Ui {
@@ -77,6 +78,10 @@ class trainSheduler : public QWidget
 
     void on_pushButton_4_clicked();
 
+    void on_pushButton_5_clicked();
+
+    void on_pushButton_6_clicked();
+
   private:
     Ui::trainSheduler *ui;
     TServer srv;
@@ -89,13 +94,11 @@ class trainSheduler : public QWidget
     void printMiniMap();
     void printHomeLoc(int scale, int size);
     void addRoad(QByteArray from, QByteArray to);
-    void readTownNames();
 
     TLocation homeTown;
     QVector<TTrainCard>  myTrains;
     QVector<TLocation>   globalMap;
     QVector<TRoads>      myRoads;
-    QString townNames[64];
 //GUI
     void guiPrinTrainList();
 };

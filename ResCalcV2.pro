@@ -6,6 +6,7 @@
 
 QT       += core gui
 QT += network
+QT +=xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,7 +22,8 @@ SOURCES += main.cpp\
     settingsadd.cpp \
     trainsrepair.cpp \
     statistic.cpp \
-    trainsheduler.cpp
+    trainsheduler.cpp \
+    getxmldata.cpp
 
 HEADERS  += rescalc.h \
     resourcedata.h \
@@ -30,7 +32,8 @@ HEADERS  += rescalc.h \
     settingsadd.h \
     trainsrepair.h \
     statistic.h \
-    trainsheduler.h
+    trainsheduler.h \
+    getxmldata.h
 
 FORMS    += rescalc.ui \
     settingsadd.ui \

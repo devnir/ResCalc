@@ -2,6 +2,8 @@
 #include "ui_trainsheduler.h"
 #include <QDebug>
 #include <QSettings>
+#include <QFile>
+#include <QtXml>
 
 trainSheduler::trainSheduler(QWidget *parent) :
   QWidget(parent),
@@ -10,7 +12,6 @@ trainSheduler::trainSheduler(QWidget *parent) :
   ui->setupUi(this);
   scene = new QGraphicsScene;
   ui->mapViev->setScene(scene);
-  readTownNames();
 }
 
 trainSheduler::~trainSheduler()
@@ -188,7 +189,7 @@ void trainSheduler::getLocations(QJsonObject jObj)
     loc.y = location.value("y").toInt();
     if(loc.type == 2)
     {
-      loc.name.append(townNames[location.value("name").toInt()]);
+      loc.name.append(getCityName(location.value("name").toInt()));
       if(loc.id == srv.townId)
       {
         homeTown =  loc;
@@ -196,15 +197,6 @@ void trainSheduler::getLocations(QJsonObject jObj)
     }
     globalMap.append(loc);
   }
-
-  QByteArray  addUrl;
-  addUrl.append("/web/rpc/flash.php?interface=RailInterface&method=get");
-  QByteArray param;
-  param.append("[\"");
-  param.append(srv.userId);
-  param.append("\"]");
-  sendQuery(addUrl, param, true);
-
   printMiniMap();
 }
 
@@ -251,7 +243,30 @@ void trainSheduler::printHomeLoc(int scale, int size)
   minY = homeTown.y - size;
   maxX = homeTown.x + size;
   maxY = homeTown.y + size;
-/*
+
+  for(int i = 0; i < myRoads.count(); i++)
+  {
+    TRoads road = myRoads.at(i);
+    if(road.loc1.x > minX && road.loc1.x < maxX &&
+       road.loc1.y > minY && road.loc1.y < maxY &&
+       road.loc2.x > minX && road.loc2.x < maxX &&
+       road.loc2.y > minY && road.loc2.y < maxY
+       )
+    {
+      color = QColor::fromRgb(0x66, 0xFF, 0x66);
+      pen.setColor(color);
+      pen.setCapStyle(Qt::FlatCap);
+      pen.setWidth(1*scale);
+      QGraphicsLineItem *itm = new QGraphicsLineItem;
+      itm->setPen(pen);
+      itm->setLine((road.loc1.x - minX) * scale,
+                   (road.loc1.y - minY) * scale,
+                   (road.loc2.x - minX) * scale,
+                   (road.loc2.y - minY) * scale);
+      scene->addItem(itm);
+    }
+  }
+
   for(int i = 0; i < globalMap.count(); i++)
   {
     TLocation loc = globalMap.at(i);
@@ -277,85 +292,7 @@ void trainSheduler::printHomeLoc(int scale, int size)
       scene->addItem(itm);
     }
   }
-*/
-  for(int i = 0; i < myRoads.count(); i++)
-  {
-    qDebug("tryRoad");
-    TRoads road = myRoads.at(i);
-    if(road.loc1.x > minX && road.loc1.x < maxX &&
-       road.loc1.y > minY && road.loc1.y < maxY &&
-       road.loc2.x > minX && road.loc2.x < maxX &&
-       road.loc2.y > minY && road.loc2.y < maxY
-       )
-    {
-      qDebug("print road");
-      color = QColor::fromRgb(0x00, 0x00, 0x00);
-      pen.setColor(color);
-      QGraphicsLineItem *itm = new QGraphicsLineItem;
-      itm->setPen(pen);
-      itm->setLine((road.loc1.x - minX) * scale,
-                   (road.loc1.y - minY) * scale,
-                   (road.loc2.x - minX) * scale,
-                   (road.loc2.y - minY) * scale);
-      scene->addItem(itm);
-    }
-  }
 }
-
-void trainSheduler::readTownNames()
-{
-  townNames[1]="Нью Корк";
-  townNames[2]="Синевилль";
-  townNames[3]="Вишингтон";
-  townNames[4]="Миллтон";
-  townNames[5]="Окхилл";
-  townNames[6]="Вестхилл";
-  townNames[7]="Нью Васюки";
-  townNames[8]="Петертаун";
-  townNames[9]="Лонкильн";
-  townNames[10]="Олдтаун";
-  townNames[11]="Дорри";
-  townNames[12]="Котэбург";
-  townNames[13]="Лонгбридж";
-  townNames[14]="Нью Грин";
-  townNames[15]="Статенборо";
-  townNames[16]="Хартфилд";
-  townNames[17]="Сандпорт";
-  townNames[18]="Болкотт";
-  townNames[19]="Брантон";
-  townNames[20]="Холсуорт";
-  townNames[21]="Стокпорт";
-  townNames[22]="Арчвилль";
-  townNames[23]="Мейбури";
-  townNames[24]="Кэмптаун";
-  townNames[25]="Лонкастер";
-  townNames[26]="Ромси";
-  townNames[27]="Клок Хевен";
-  townNames[28]="Чистый залив";
-  townNames[29]="Либерти";
-  townNames[30]="Солт Спрингс";
-  townNames[31]="Эйт Спрингс";
-  townNames[32]="Блюкрик";
-  townNames[33]="Хагстон";
-  townNames[34]="Элсфилд";
-  townNames[35]="Кирктаун";
-  townNames[36]="Старлинг";
-  townNames[37]="Оксбури";
-  townNames[38]="Форт Кроу";
-  townNames[39]="Джонсборо";
-  townNames[40]="Ст. Никлас";
-  townNames[41]="Спрингвилль";
-  townNames[42]="Стилуотер";
-  townNames[43]="Роксдейл";
-  townNames[44]="Бларингтон";
-  townNames[45]="Честерфилд";
-  townNames[46]="Куртвилль";
-  townNames[47]="Слейтон";
-  townNames[48]="Стамфорд";
-  townNames[49]="Таффингтон";
-  townNames[50]="Беллхам";
-}
-
 
 void trainSheduler::on_pushButton_3_clicked()
 {
@@ -373,7 +310,7 @@ void trainSheduler::getRoads(QJsonObject jObj)
     bgn.clear();
     end.clear();
     bgn.append(road.value("location_id1").toString());
-    end.append(road.value("location_id1").toString());
+    end.append(road.value("location_id2").toString());
     addRoad(bgn, end);
   }
 }
@@ -400,4 +337,22 @@ void trainSheduler::addRoad(QByteArray from, QByteArray to)
 void trainSheduler::on_pushButton_4_clicked()
 {
 
+  QByteArray  addUrl;
+  addUrl.append("/web/rpc/flash.php?interface=RailInterface&method=get");
+  QByteArray param;
+  param.append("[\"");
+  param.append(srv.userId);
+  param.append("\"]");
+  //param.append("[]");
+  sendQuery(addUrl, param, true);
+}
+
+void trainSheduler::on_pushButton_5_clicked()
+{
+    scene->clear();
+}
+
+void trainSheduler::on_pushButton_6_clicked()
+{   
+   qDebug() << getFactoryName(4, 4, 4);
 }
